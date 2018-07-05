@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Verify we are running as root
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root" 1>&2
+   exit 1
+fi
+
 # specify root for find as a command option
 ROOT_DIR='.'
 SRC_DIR=''
@@ -53,25 +59,41 @@ done
 
 CUR_DIR=$PWD
 
+echo Starting backup at $(date)... > ~/backupscript.log
+
 # move to root dir
 cd ${ROOT_DIR}
 
+echo Moved to $PWD... >> ~/backupscript.log
+
+# Stop any autoheal monitor containers (as these can cause other containers to restart!
+echo looking for autoheal containers >> ~/backupscript.log
+autoheal_id=$(sudo docker ps -aqf "name=autoheal")
+if [ ! -z $autoheal_id ]; then 
+    echo "Found autoheal container id(s): $autoheal_id" >> ~/backupscript.log
+    echo "Stoppping autoheal containers..." >> ~/backupscript.log
+    sudo docker stop $autoheal_id &>> ~/backupscript.log
+    echo "...Assuming this will be restarted by docker-compose later" >> ~/backupscript.log
+fi
+
 # Cleanly stop all running containers using compose
-find -maxdepth ${DEPTH} -name "docker-compose.yml" -exec docker-compose -f {} stop \;
+find -maxdepth ${DEPTH} -name "docker-compose.yml" -exec docker-compose -f {} stop &>> ~/backupscript.log \;
 
 # Stop docker to take down any other non-compose containers
-sudo systemctl docker stop
+systemctl stop docker &>> ~/backupscript.log
 
 ## rsync command - add further switches for src and destination
-if ! echo "rsync -axHh --inplace --delete ${SRC_DIR} ${DEST_DIR} > ~/backupscript.log" ; then exit 1; fi
+if ! rsync -axHhv --inplace --delete ${SRC_DIR} ${DEST_DIR} >> ~/backupscript.log ; then exit 1; fi
 
 # restart docker (will also bring up any containers set to restart: always)
-sudo systemctl docker start
+systemctl start docker &>> ~/backupscript.log
 
 # restart all stopped containers using compose
-find -maxdepth ${DEPTH} -name "docker-compose.yml" -exec echo docker-compose -f {} start \;
+find -maxdepth ${DEPTH} -name "docker-compose.yml" -exec docker-compose -f {} start &>> ~/backupscript.log \;
 
 # move back to original dir
 cd ${CUR_DIR}
+
+echo ...Backup completed at $(date)
 
 exit 0
