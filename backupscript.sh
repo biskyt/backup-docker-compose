@@ -84,7 +84,7 @@ fi
 
 # Cleanly stop all running containers using compose
 echo "Running compose stop..." | tee -a ${OUTPUTDIR}/backupscript.log
-find "${ROOT_DIR}" -maxdepth ${DEPTH} -name "docker-compose.yml" -exec echo Stop {} ... \; -exec docker-compose -f {} stop \; | tee -a ${OUTPUTDIR}/backupscript.log
+find "${ROOT_DIR}" -maxdepth ${DEPTH} -name "docker-compose.yml" -exec echo Stop {} ... \; -exec /usr/local/bin/docker-compose -f {} stop \; | tee -a ${OUTPUTDIR}/backupscript.log
 
 # Stop docker to take down any other non-compose containers
 echo "Stopping Docker Service..." | tee -a ${OUTPUTDIR}/backupscript.log
@@ -100,7 +100,7 @@ systemctl start docker | tee -a ${OUTPUTDIR}/backupscript.log
 
 # restart all stopped containers using compose
 echo "Running compose up..." | tee -a ${OUTPUTDIR}/backupscript.log
-find "${ROOT_DIR}" -maxdepth ${DEPTH} -name "docker-compose.yml" -exec echo up {} ... \; -exec docker-compose -f {} up -d \; | tee -a ${OUTPUTDIR}/backupscript.log
+find "${ROOT_DIR}" -maxdepth ${DEPTH} -name "docker-compose.yml" -exec echo up {} ... \; -exec /usr/local/bin/docker-compose -f {} up -d \; | tee -a ${OUTPUTDIR}/backupscript.log
 
 echo ...Backup completed at $(date) | tee -a ${OUTPUTDIR}/backupscript.log
 
