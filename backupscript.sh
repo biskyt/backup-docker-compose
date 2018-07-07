@@ -96,7 +96,7 @@ if ! rsync -axHhv --inplace --delete ${SRC_DIR} ${DEST_DIR} >> ${OUTPUTDIR}/back
 systemctl start docker &>> ${OUTPUTDIR}/backupscript.log
 
 # restart all stopped containers using compose
-find -maxdepth ${DEPTH} -name "docker-compose.yml" -exec docker-compose -f {} start &>> ${OUTPUTDIR}/backupscript.log \;
+find -maxdepth ${DEPTH} -name "docker-compose.yml" -exec docker-compose -f {} up -d &>> ${OUTPUTDIR}/backupscript.log \;
 
 # move back to original dir
 cd ${CUR_DIR}
