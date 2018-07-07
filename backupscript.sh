@@ -53,8 +53,7 @@ echo "Starting backup at $(date) from DIR $PWD...
 ROOT_DIR=$ROOT_DIR
 SRC_DIR=$SRC_DIR
 DEST_DIR=$DEST_DIR
-DEPTH=$DEPTH
-OUTPUTDIR=$OUTPUTDIR" | tee ${OUTPUTDIR}/backupscript.log
+DEPTH=$DEPTH"
 
 # Verify we are running as root
 if [[ $EUID -ne 0 ]]; then
