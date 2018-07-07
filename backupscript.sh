@@ -96,6 +96,7 @@ echo "Stopping Docker Service..." | tee -a ${OUTPUTDIR}/backupscript.log
 systemctl stop docker | tee -a ${OUTPUTDIR}/backupscript.log
 
 ## rsync command - add further switches for src and destination
+echo "Starting rsync..." | tee -a ${OUTPUTDIR}/backupscript.log
 if ! rsync -axHhv --inplace --delete ${SRC_DIR} ${DEST_DIR} | tee -a ${OUTPUTDIR}/backupscript.log ; then exit 1; fi
 
 # restart docker (will also bring up any containers set to restart: always)
