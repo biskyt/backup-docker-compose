@@ -88,23 +88,27 @@ if [ ! -z $autoheal_id ]; then
 fi
 
 # Cleanly stop all running containers using compose
-find -maxdepth ${DEPTH} -name "docker-compose.yml" -exec docker-compose -f {} stop | tee -a ${OUTPUTDIR}/backupscript.log \;
+echo "Running compose stop..." | tee -a ${OUTPUTDIR}/backupscript.log
+find -maxdepth ${DEPTH} -name "docker-compose.yml" -exec docker-compose -f {} stop \; | tee -a ${OUTPUTDIR}/backupscript.log \;
 
 # Stop docker to take down any other non-compose containers
+echo "Stopping Docker Service..." | tee -a ${OUTPUTDIR}/backupscript.log
 systemctl stop docker | tee -a ${OUTPUTDIR}/backupscript.log
 
 ## rsync command - add further switches for src and destination
 if ! rsync -axHhv --inplace --delete ${SRC_DIR} ${DEST_DIR} | tee -a ${OUTPUTDIR}/backupscript.log ; then exit 1; fi
 
 # restart docker (will also bring up any containers set to restart: always)
+echo "Restarting Docker Service..." | tee -a ${OUTPUTDIR}/backupscript.log
 systemctl start docker | tee -a ${OUTPUTDIR}/backupscript.log
 
 # restart all stopped containers using compose
-find -maxdepth ${DEPTH} -name "docker-compose.yml" -exec docker-compose -f {} up -d | tee -a ${OUTPUTDIR}/backupscript.log \;
+echo "Running compose up..." | tee -a ${OUTPUTDIR}/backupscript.log
+find -maxdepth ${DEPTH} -name "docker-compose.yml" -exec docker-compose -f {} up -d \; | tee -a ${OUTPUTDIR}/backupscript.log \;
 
 # move back to original dir
 cd ${CUR_DIR}
 
-echo ...Backup completed at $(date) | tee -a ${OUTPUTDIR}/backupscript.log \;
+echo ...Backup completed at $(date) | tee -a ${OUTPUTDIR}/backupscript.log
 
 exit 0
