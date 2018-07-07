@@ -72,11 +72,6 @@ fi
 
 CUR_DIR=$PWD
 
-# move to root dir
-#cd ${ROOT_DIR}
-
-echo Moved to $PWD... | tee -a ${OUTPUTDIR}/backupscript.log
-
 # Stop any autoheal monitor containers (as these can cause other containers to restart!
 echo looking for autoheal containers | tee -a ${OUTPUTDIR}/backupscript.log
 autoheal_id=$(sudo docker ps -aqf "name=autoheal")
@@ -106,9 +101,6 @@ systemctl start docker | tee -a ${OUTPUTDIR}/backupscript.log
 # restart all stopped containers using compose
 echo "Running compose up..." | tee -a ${OUTPUTDIR}/backupscript.log
 find "${ROOT_DIR}" -maxdepth ${DEPTH} -name "docker-compose.yml" -exec echo up {} ... \; -exec docker-compose -f {} up -d \; | tee -a ${OUTPUTDIR}/backupscript.log
-
-# move back to original dir
-#cd ${CUR_DIR}
 
 echo ...Backup completed at $(date) | tee -a ${OUTPUTDIR}/backupscript.log
 
