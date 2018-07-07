@@ -4,13 +4,11 @@ ROOT_DIR='.'
 SRC_DIR=''
 DEST_DIR=''
 DEPTH=2
-OUTPUTDIR='~'
 
 setroot=0
 setsrc=0
 setdest=0
 setdepth=0
-setoutputdir=0
 
 for i in "$@"
 do
@@ -30,8 +28,6 @@ case $i in
         ;;
     -x|-depth) setdepth=1
         ;;
-    -o|--outputdir) setoutputdir=1
-        ;;
 	*)  if [ ! -z "$i" ]; then
 			if [ "$setroot" = "1" ]; then
 				ROOT_DIR=$i
@@ -45,9 +41,6 @@ case $i in
             elif [ "$setdepth" == "1" ]; then
 				DEPTH=$i
                 setdest=0
-            elif [ "$setoutputdir" == "1" ]; then
-				OUTPUTDIR=$i
-                setoutputdir=0
 			else echo "Unknown command line: $i"
 				exit 1
 			fi
@@ -65,43 +58,40 @@ OUTPUTDIR=$OUTPUTDIR" | tee ${OUTPUTDIR}/backupscript.log
 
 # Verify we are running as root
 if [[ $EUID -ne 0 ]]; then
-   echo "Failed to start backup at $(date). Must be run as root user..." | tee -a $OUTPUTDIR/backupscript_FAIL.log
+   echo "Failed to start backup at $(date). Must be run as root user..."
    exit 1
 fi
 
-
-CUR_DIR=$PWD
-
 # Stop any autoheal monitor containers (as these can cause other containers to restart!
-echo looking for autoheal containers | tee -a ${OUTPUTDIR}/backupscript.log
+echo looking for autoheal containers
 autoheal_id=$(sudo docker ps -aqf "name=autoheal")
 if [ ! -z $autoheal_id ]; then
-    echo "Found autoheal container id(s): $autoheal_id" | tee -a ${OUTPUTDIR}/backupscript.log
-    echo "Stoppping autoheal containers..." | tee -a ${OUTPUTDIR}/backupscript.log
-    sudo docker stop $autoheal_id | tee -a ${OUTPUTDIR}/backupscript.log
-    echo "...Assuming this will be restarted by docker-compose later" | tee -a ${OUTPUTDIR}/backupscript.log
+    echo "Found autoheal container id(s): $autoheal_id"
+    echo "Stoppping autoheal containers..."
+    sudo docker stop $autoheal_id
+    echo "...Assuming this will be restarted by docker-compose later"
 fi
 
 # Cleanly stop all running containers using compose
-echo "Running compose stop..." | tee -a ${OUTPUTDIR}/backupscript.log
-find "${ROOT_DIR}" -maxdepth ${DEPTH} -name "docker-compose.yml" -exec echo Stop {} ... \; -exec /usr/local/bin/docker-compose -f {} stop \; | tee -a ${OUTPUTDIR}/backupscript.log
+echo "Running compose stop..."
+find "${ROOT_DIR}" -maxdepth ${DEPTH} -name "docker-compose.yml" -exec echo Stop {} ... \; -exec /usr/local/bin/docker-compose -f {} stop \;
 
 # Stop docker to take down any other non-compose containers
-echo "Stopping Docker Service..." | tee -a ${OUTPUTDIR}/backupscript.log
-systemctl stop docker | tee -a ${OUTPUTDIR}/backupscript.log
+echo "Stopping Docker Service..."
+systemctl stop docker
 
 ## rsync command - add further switches for src and destination
-echo "Starting rsync..." | tee -a ${OUTPUTDIR}/backupscript.log
-if ! rsync -axHhv --inplace --delete ${SRC_DIR} ${DEST_DIR} | tee -a ${OUTPUTDIR}/backupscript.log ; then exit 1; fi
+echo "Starting rsync..."
+if ! rsync -axHhv --inplace --delete ${SRC_DIR} ${DEST_DIR} ; then exit 1; fi
 
 # restart docker (will also bring up any containers set to restart: always)
-echo "Restarting Docker Service..." | tee -a ${OUTPUTDIR}/backupscript.log
-systemctl start docker | tee -a ${OUTPUTDIR}/backupscript.log
+echo "Restarting Docker Service..."
+systemctl start docker
 
 # restart all stopped containers using compose
-echo "Running compose up..." | tee -a ${OUTPUTDIR}/backupscript.log
-find "${ROOT_DIR}" -maxdepth ${DEPTH} -name "docker-compose.yml" -exec echo up {} ... \; -exec /usr/local/bin/docker-compose -f {} up -d \; | tee -a ${OUTPUTDIR}/backupscript.log
+echo "Running compose up..."
+find "${ROOT_DIR}" -maxdepth ${DEPTH} -name "docker-compose.yml" -exec echo up {} ... \; -exec /usr/local/bin/docker-compose -f {} up -d \;
 
-echo ...Backup completed at $(date) | tee -a ${OUTPUTDIR}/backupscript.log
+echo ...Backup completed at $(date)
 
 exit 0
