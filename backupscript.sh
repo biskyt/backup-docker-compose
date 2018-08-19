@@ -76,16 +76,16 @@ echo "Running compose stop..."
 find "${ROOT_DIR}" -maxdepth ${DEPTH} -name "docker-compose.yml" -exec echo Stop {} ... \; -exec /usr/local/bin/docker-compose -f {} stop \;
 
 # Stop docker to take down any other non-compose containers
-echo "Stopping Docker Service..."
-systemctl stop docker
+# echo "Stopping Docker Service..."
+# systemctl stop docker
 
 ## rsync command - add further switches for src and destination
 echo "Starting rsync..."
-if ! rsync -axHhv --inplace --delete ${SRC_DIR} ${DEST_DIR} ; then exit 1; fi
+if ! rsync -axHhv --exclude 'swapfile' --exclude '*.swp' --exclude '*.tmp' --exclude ';'  --inplace --delete ${SRC_DIR} ${DEST_DIR} ; then exit 1; fi
 
 # restart docker (will also bring up any containers set to restart: always)
-echo "Restarting Docker Service..."
-systemctl start docker
+# echo "Restarting Docker Service..."
+# systemctl start docker
 
 # restart all stopped containers using compose
 echo "Running compose up..."
