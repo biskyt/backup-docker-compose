@@ -73,7 +73,7 @@ fi
 
 # Cleanly stop all running containers using compose
 echo "Running compose stop..."
-find "${ROOT_DIR}" -maxdepth ${DEPTH} -name "docker-compose.yml" -exec echo Stop {} ... \; -exec /usr/local/bin/docker-compose -f {} stop \;
+find "${ROOT_DIR}" -maxdepth ${DEPTH} -name "docker-compose.yml" -exec echo Stop {} ... \; -exec docker-compose -f {} stop \;
 
 # Stop docker to take down any other non-compose containers
 # echo "Stopping Docker Service..."
@@ -89,7 +89,7 @@ if ! rsync -axHhv --exclude 'swapfile' --exclude '*.swp' --exclude '*.tmp' --exc
 
 # restart all stopped containers using compose
 echo "Running compose up..."
-find "${ROOT_DIR}" -maxdepth ${DEPTH} -name "docker-compose.yml" -exec echo up {} ... \; -exec /usr/local/bin/docker-compose -f {} up -d \;
+find "${ROOT_DIR}" -maxdepth ${DEPTH} -name "docker-compose.yml" -exec echo up {} ... \; -exec docker-compose -f {} up -d \;
 
 echo ...Backup completed at $(date)
 
