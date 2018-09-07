@@ -81,7 +81,7 @@ find "${ROOT_DIR}" -maxdepth ${DEPTH} -name "docker-compose.yml" -exec echo Stop
 
 ## rsync command - add further switches for src and destination
 echo "Starting rsync..."
-if ! rsync -axHhv --exclude 'swapfile' --exclude '*.swp' --exclude '*.tmp' --exclude ';'  --inplace --delete ${SRC_DIR} ${DEST_DIR} ; then exit 1; fi
+if ! rsync -axHhv --exclude 'swapfile' --exclude '*.swp' --exclude '*.tmp' --exclude ';' --exclude 'docker/data/'  --inplace --delete ${SRC_DIR} ${DEST_DIR} ; then exit 1; fi
 
 # restart docker (will also bring up any containers set to restart: always)
 # echo "Restarting Docker Service..."
