@@ -49,6 +49,32 @@ case $i in
 esac
 done
 
+function start-compose-cmd() {
+  echo "Starting $1"
+  composecmd=$(which docker-compose)
+  if [ -z $composecmd ]; then composecmd="/usr/local/bin/docker-compose"; fi
+  currentdir=$(pwd)
+  workingdir=$(dirname $1)
+  cd $workingdir || continue
+  $composecmd up -d
+  cd $currentdir || exit 1
+}
+
+export -f start-compose-cmd
+
+function stop-compose-cmd() {
+  echo "Stopping $1"
+  composecmd=$(which docker-compose)
+  if [ -z $composecmd ]; then composecmd="/usr/local/bin/docker-compose"; fi
+  currentdir=$(pwd)
+  workingdir=$(dirname $1)
+  cd $workingdir || continue
+  $composecmd stop
+  cd $currentdir || exit 1
+}
+
+export -f stop-compose-cmd
+
 echo "Starting backup at $(date) from DIR $PWD...
 ROOT_DIR=$ROOT_DIR
 SRC_DIR=$SRC_DIR
@@ -73,7 +99,7 @@ fi
 
 # Cleanly stop all running containers using compose
 echo "Running compose stop..."
-find "${ROOT_DIR}" -maxdepth ${DEPTH} -name "docker-compose.yml" -exec echo Stop {} ... \; -exec docker-compose -f {} stop \;
+find "${ROOT_DIR}" -maxdepth ${DEPTH} -name "docker-compose.yml" -exec echo Stop {} ... \; -exec bash -c 'stop-compose-cmd "$0"' {} \;
 
 # Stop docker to take down any other non-compose containers
 # echo "Stopping Docker Service..."
@@ -89,7 +115,7 @@ if ! rsync -axHhv --exclude 'swapfile' --exclude '*.swp' --exclude '*.tmp' --exc
 
 # restart all stopped containers using compose
 echo "Running compose up..."
-find "${ROOT_DIR}" -maxdepth ${DEPTH} -name "docker-compose.yml" -exec echo up {} ... \; -exec docker-compose -f {} up -d \;
+find "${ROOT_DIR}" -maxdepth ${DEPTH} -name "docker-compose.yml" -exec echo up {} ... \; -exec bash -c 'start-compose-cmd "$0"' {} \;
 
 echo ...Backup completed at $(date)
 
