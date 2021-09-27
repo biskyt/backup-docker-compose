@@ -127,6 +127,8 @@ fi
 # echo "Restarting Docker Service..."
 # systemctl start docker
 
+sudo reboot
+
 # restart all stopped containers using compose
 echo "Running compose up..."
 find "${ROOT_DIR}" -maxdepth "${DEPTH}" -name "docker-compose.yml" -exec echo up {} ... \; -exec bash -c 'start-compose-cmd "$0"' {} \;
