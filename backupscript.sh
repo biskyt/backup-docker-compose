@@ -127,7 +127,7 @@ fi
 # echo "Restarting Docker Service..."
 # systemctl start docker
 
-sudo reboot
+#sudo reboot
 
 # restart all stopped containers using compose
 echo "Running compose up..."
