@@ -1,5 +1,6 @@
 #!/bin/bash
 
+sudo apt install rsync -y
 sudo cp backupscript.sh /usr/local/bin/
 sudo chmod a+rx /usr/local/bin/backupscript.sh
 # Use sed to expand variable for home dir
