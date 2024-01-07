@@ -119,7 +119,7 @@ find "${ROOT_DIR}" -maxdepth "${DEPTH}" -name "docker-compose.yml" -exec echo St
 
 ## rsync command - add further switches for src and destination
 echo "Starting rsync..."
-if ! rsync -axHhv --exclude 'swapfile' --exclude '*.swp' --exclude '*.tmp' --exclude ';' --exclude 'docker/data/' --inplace --delete "${SRC_DIR}" "${DEST_DIR}";then 
+if ! rsync -axHhv --exclude 'swapfile' --exclude '*.swp' --exclude '*.tmp' --exclude ';' --inplace --delete "${SRC_DIR}" "${DEST_DIR}";then 
 	echo "
 *******************************************
 *******************************************
